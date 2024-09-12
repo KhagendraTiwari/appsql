@@ -1,23 +1,27 @@
-# Use an official Python runtime as the base image
-FROM python:3.9-slim
+version: '3'
 
-# Set the working directory in the container
-WORKDIR /app
+services:
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - MYSQL_HOST=db
+      - MYSQL_USER=myuser
+      - MYSQL_PASSWORD=mypassword
+      - MYSQL_DB=mydb
+    depends_on:
+      - db
 
-# Copy the current directory contents into the container at /app
-COPY . /app
+  db:
+    image: mysql:5.7
+    environment:
+      - MYSQL_ROOT_PASSWORD=rootpassword
+      - MYSQL_DATABASE=mydb
+      - MYSQL_USER=myuser
+      - MYSQL_PASSWORD=mypassword
+    volumes:
+      - mysql_data:/var/lib/mysql
 
-# Install any needed packages specified in requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Make port 8080 available to the world outside this container
-EXPOSE 8080
-
-# Define environment variables (optional, can be overridden by docker-compose.yml)
-ENV DB_HOST=db
-ENV DB_USER=root
-ENV DB_PASSWORD=rootpassword
-ENV DB_NAME=mydb
-
-# Run app.py when the container launches
-CMD ["python", "app.py"]
+volumes:
+  mysql_data:
