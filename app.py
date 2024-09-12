@@ -1,36 +1,25 @@
-from flask import Flask, jsonify
-import os
+from flask import Flask
 import mysql.connector
+import os
 
 app = Flask(__name__)
 
-# Database configuration from environment variables
-db_config = {
-    'user': os.getenv('DB_USER'),
-    'password': os.getenv('DB_PASSWORD'),
-    'host': os.getenv('DB_HOST'),
-    'database': os.getenv('DB_NAME')
-}
-
 @app.route('/')
-def index():
-    return "Hello, this is a Dockerized Flask application!"
-
-@app.route('/db')
-def test_db():
+def hello():
     try:
-        # Establish a connection to the MySQL database
-        connection = mysql.connector.connect(**db_config)
-        cursor = connection.cursor()
-        cursor.execute("SELECT DATABASE();")
-        db_name = cursor.fetchone()[0]
-        return jsonify({"message": "Connected to database", "database": db_name})
-    except mysql.connector.Error as err:
-        return jsonify({"error": str(err)})
-    finally:
-        if connection.is_connected():
-            cursor.close()
-            connection.close()
+        conn = mysql.connector.connect(
+            host=os.environ['MYSQL_HOST'],
+            user=os.environ['MYSQL_USER'],
+            password=os.environ['MYSQL_PASSWORD'],
+            database=os.environ['MYSQL_DB']
+        )
+        cursor = conn.cursor()
+        cursor.execute("SELECT 'Hello, Docker!' AS message")
+        result = cursor.fetchone()
+        conn.close()
+        return result[0]
+    except Exception as e:
+        return f"Error: {str(e)}"
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080)
+    app.run(host='0.0.0.0')
