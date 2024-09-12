@@ -1,27 +1,10 @@
-version: '3'
+FROM python:3.9-slim
 
-services:
-  web:
-    build: .
-    ports:
-      - "5000:5000"
-    environment:
-      - MYSQL_HOST=db
-      - MYSQL_USER=myuser
-      - MYSQL_PASSWORD=mypassword
-      - MYSQL_DB=mydb
-    depends_on:
-      - db
+WORKDIR /app
 
-  db:
-    image: mysql:5.7
-    environment:
-      - MYSQL_ROOT_PASSWORD=rootpassword
-      - MYSQL_DATABASE=mydb
-      - MYSQL_USER=myuser
-      - MYSQL_PASSWORD=mypassword
-    volumes:
-      - mysql_data:/var/lib/mysql
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-volumes:
-  mysql_data:
+COPY app.py .
+
+CMD ["python", "app.py"]
